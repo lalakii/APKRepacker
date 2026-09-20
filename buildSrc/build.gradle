@@ -1,0 +1,115 @@
+import cn.lalaki.pub.BaseCentralPortalPlusExtension
+
+plugins {
+    id "signing"
+    id "maven-publish"
+    id "java-gradle-plugin"
+    id "cn.lalaki.central" version "2.0.9"
+}
+group = "cn.lalaki.buildSrc"
+//noinspection GroovyUnusedAssignment
+version = "1.2.2"
+def projectName = "APKRepacker"
+def projectDesc = "APKRepacker is a gradle plugin that helps you automatically repackage and modify your APK after building. It makes it easier for developers to customize their APKs—like removing content or adding resources—saving you from manual work."
+def projectUrl = "https://github.com/lalakii/APKRepacker"
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+    google()
+}
+gradlePlugin {
+    plugins {
+        APKRepacker {
+            id = group
+            implementationClass = "cn.lalaki.buildSrc.APKRepacker"
+            displayName = projectName
+            description = projectDesc
+            tags = new String[]{"android", "apk", "repacker", "gradle-plugin"}
+        }
+    }
+}
+dependencies {
+    implementation "commons-io:commons-io:2.22.0"
+    implementation "net.lingala.zip4j:zip4j:2.11.6"
+    implementation "com.google.guava:guava:33.7.1-jre"
+    implementation "com.android.tools.build:gradle:9.4.0"
+    implementation "org.apache.commons:commons-lang3:3.20.0"
+    implementation "org.apache.commons:commons-compress:1.28.0"
+}
+centralPortalPlus {
+    tokenXml = new File("D:\\user_token.xml").toURI()
+    publishingType = BaseCentralPortalPlusExtension.PublishingType.USER_MANAGED
+}
+publishing {
+    repositories {
+        mavenLocal()
+    }
+    afterEvaluate {
+        publications.each {
+            pub ->
+                pub.pom {
+                    url.set(projectUrl)
+                    name.set(projectName)
+                    description.set(projectDesc)
+                    inceptionYear.set("2026")
+
+                    licenses {
+                        license {
+                            name.set("The Apache Software License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id.set("lalaki.cn")
+                            name.set("lalaki")
+                            email.set("i@lalaki.cn")
+                            roles.set(List.of("developer"))
+                            timezone.set("Asia/Chongqing")
+                            organization.set("lalaki")
+                            organizationUrl.set("https://lalaki.cn")
+                        }
+                    }
+
+                    issueManagement {
+                        url.set("${projectUrl}/issues")
+                        system.set("Github")
+                    }
+
+                    organization {
+                        name.set("lalaki")
+                        url.set("https://lalaki.cn")
+                    }
+
+                    scm {
+                        connection.set("scm:git:${projectUrl}.git")
+                        developerConnection.set("scm:git:${projectUrl}.git")
+                        url.set(projectUrl)
+                    }
+                }
+        }
+    }
+}
+signing {
+    useGpgCmd()
+    afterEvaluate {
+        sign publishing.publications.APKRepackerPluginMarkerMaven
+        sign publishing.publications.pluginMaven
+    }
+}
+tasks.withType(Javadoc).configureEach {
+    options {
+        addStringOption("Xdoclint:none", "-quiet")
+        encoding "UTF-8"
+        charSet "UTF-8"
+        links "https://docs.oracle.com/en/java/javase/${java.toolchain.languageVersion.get()}/docs/api/"
+    }
+}

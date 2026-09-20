@@ -1,0 +1,76 @@
+plugins {
+    id "com.android.application"
+    id "cn.lalaki.buildSrc"
+}
+
+def yourTask = tasks.register("yourTaskName") {
+    doLast {
+        println "This is your custom task."
+    }
+}
+
+repackageConfig {
+    // *sign
+    autoSign = true
+    storeFile = "D:\\lalaki-new-1.jks"
+    keyAlias = "0"
+    ksPass = "0"
+    keyPass = "0"
+    signerName = "hello"
+
+//  *remove version-control-info.textproto and app-metadata.properties
+    includeMetaData = false
+//
+//  *remove DebugProbesKt.bin
+    debugKt = false
+
+//  *remove custom file
+    blackList = List.of("*.version", "lib/armeabi-v7a/libbarhopper_v3.so")
+
+//  *Add file to apk assets dir, only file! can't add dir!
+    addAssetsList = List.of("D:\\test.txt")
+
+//  *After APKRepacker Task
+    doAfterTask = yourTask.getName()  // or doAfterTask = "yourTaskName"
+//
+//  *print apk output path
+    printOutputApk = true
+
+//  *disable this plugin
+//
+//  disabled = true
+}
+
+android {
+    namespace = "cn.lalaki.repack.demo"
+    compileSdkPreview = "CinnamonBun"
+    defaultConfig {
+        applicationId "cn.lalaki.repack.demo"
+        minSdk 24
+        targetSdk 37
+        versionCode 1
+        versionName "1.0"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources = false
+            debuggable false
+            jniDebuggable false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+        }
+    }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+}
+
+dependencies {
+    implementation "com.google.mlkit:barcode-scanning:17.3.0"
+}
